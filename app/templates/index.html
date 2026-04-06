@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dhaka City Transit | Next Gen Bus Navigation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css" />
+  <style>
+    :root {
+      --bg-base: #060510;
+      --glass: rgba(18, 16, 36, 0.5);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      
+      --accent-primary: #00f2fe;
+      --accent-primary-glow: rgba(0, 242, 254, 0.4);
+      --accent-secondary: #fe0979;
+      --accent-secondary-glow: rgba(254, 9, 121, 0.4);
+      --accent-success: #0df072;
+      --accent-warn: #ffb800;
+      
+      --text-main: #f0f0f5;
+      --text-muted: #8b8a9e;
+      
+      --font-en: 'Outfit', sans-serif;
+      --font-bn: 'Noto Sans Bengali', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-en);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Cyber Orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      animation: float 20s infinite alternate;
+      opacity: 0.6;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--accent-secondary); top: -100px; left: -100px; transform: scale(1.2); }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent-primary); bottom: -150px; right: -100px; transform: scale(1.1); animation-delay: -5s; }
+    .orb-3 { width: 300px; height: 300px; background: #6200ea; top: 40%; left: 30%; animation-delay: -10s; }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1.1); }
+      50% { transform: translate(40px, -40px) scale(0.9); }
+      100% { transform: translate(-30px, 30px) scale(1.2); }
+    }
+
+    /* Navbar */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 3%;
+      background: rgba(6, 5, 16, 0.4);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+    .nav-brand i { 
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links { display: flex; gap: 2rem; }
+    
+    .nav-links button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-en);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+    .nav-links button:hover, .nav-links button.active {
+      color: var(--accent-primary);
+      text-shadow: 0 0 10px var(--accent-primary-glow);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* Reusable Glass Card */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    
+    .cyber-border {
+      position: relative;
+    }
+    .cyber-border::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), var(--accent-secondary), transparent);
+    }
+
+    /* View Specifics */
+    .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
+    .view-section.active { display: block; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Search */
+    .hero { text-align: center; margin-bottom: 3rem; }
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-bn {
+      font-family: var(--font-bn);
+      display: block;
+      font-size: 0.4em;
+      margin-top: 0.5rem;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    /* Search Form */
+    .search-grid {
+      display: grid; grid-template-columns: 1fr 50px 1fr;
+      gap: 0.5rem; align-items: center; position: relative; margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) {
+      .search-grid { grid-template-columns: 1fr; gap: 1rem; }
+    }
+    
+    .input-group { position: relative; text-align: left; }
+    .input-group label {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px;
+      color: var(--accent-primary); margin-bottom: 0.5rem; font-weight: 600;
+    }
+    
+    .cyber-input {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1rem 1rem 1rem 3rem;
+      color: #fff;
+      font-size: 1.1rem;
+      font-family: var(--font-en);
+      transition: all 0.3s;
+    }
+    .cyber-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 15px var(--accent-primary-glow);
+      outline: none;
+    }
+    .input-icon {
+      position: absolute; left: 1rem; top: 2.8rem;
+      font-size: 1.2rem; color: var(--text-muted);
+    }
+    
+    .swap-btn {
+      width: 46px; height: 46px;
+      margin: 1.8rem auto 0;
+      background: rgba(254, 9, 121, 0.1);
+      border: 1px solid var(--accent-secondary);
+      color: var(--accent-secondary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.2rem; transition: all 0.3s;
+    }
+    .swap-btn:hover {
+      background: var(--accent-secondary); color: #fff;
+      box-shadow: 0 0 20px var(--accent-secondary-glow);
+      transform: rotate(180deg);
+    }
+
+    .btn-epic {
+      width: 100%;
+      padding: 1.2rem;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #fff;
+      font-family: var(--font-en);
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      transition: all 0.3s;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .btn-epic:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--accent-primary-glow); }
+
+    /* Autocomplete */
+    .suggestions {
+      position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+      background: #110e23; border: 1px solid var(--glass-border);
+      border-radius: 12px; max-height: 250px; overflow-y: auto; z-index: 10; display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .suggestions.open { display: block; }
+    .s-item {
+      padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.02);
+      display: flex; align-items: center; gap: 0.75rem; font-size: 0.95rem;
+    }
+    .s-item:hover, .s-item.active { background: rgba(0, 242, 254, 0.1); color: var(--accent-primary); }
+    
+    /* Stats Row */
+    .stats { display: flex; justify-content: center; gap: 3rem; margin-top: 4rem; flex-wrap: wrap; }
+    .stat-box { text-align: center; }
+    .stat-num { font-size: 3rem; font-weight: 800; color: var(--accent-primary); text-shadow: 0 0 15px var(--accent-primary-glow); }
+    .stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 0.5rem; }
+
+    /* Results */
+    .title-flex { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; justify-content: center; flex-wrap: wrap;}
+    .stop-chip {
+      background: rgba(0, 242, 254, 0.1); border: 1px solid var(--accent-primary);
+      padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; color: var(--accent-primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    
+    .status-msg {
+      padding: 1rem; border-radius: 12px; text-align: center; margin-bottom: 2rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1.1rem;
+    }
+    .status-success { background: rgba(13, 240, 114, 0.1); border: 1px solid var(--accent-success); color: var(--accent-success); }
+    .status-warn { background: rgba(255, 184, 0, 0.1); border: 1px solid var(--accent-warn); color: var(--accent-warn); }
+    .status-fail { background: rgba(254, 9, 121, 0.1); border: 1px solid var(--accent-secondary); color: var(--accent-secondary); }
+
+    .route-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-primary);
+      border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; transition: transform 0.2s;
+    }
+    .route-card:hover { transform: translateX(5px); border-color: rgba(0, 242, 254, 0.3); }
+    
+    .rc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;}
+    .rc-title { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    
+    .meta-badges { display: flex; gap: 0.5rem; }
+    .badge {
+      padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .b-time { background: rgba(255, 184, 0, 0.1); border: 1px solid var(--accent-warn); color: var(--accent-warn); }
+    .b-stops { background: rgba(0, 242, 254, 0.1); border: 1px solid var(--accent-primary); color: var(--accent-primary); }
+
+    /* Awesome Timeline */
+    .timeline { padding-left: 1rem; position: relative; }
+    .timeline::before {
+      content: ''; position: absolute; left: 15px; top: 10px; bottom: 10px;
+      width: 2px; background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+    }
+    .tl-node { position: relative; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 1rem; font-weight: 600; }
+    .tl-node::before {
+      content: ''; position: absolute; left: -6px; top: 6px; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--bg-base); border: 2px solid var(--accent-primary);
+    }
+    .tl-node.end::before { border-color: var(--accent-secondary); }
+    .tl-mid { color: var(--text-muted); font-size: 0.85rem; font-weight: 400; font-family: monospace; display: flex; align-items: center; gap: 0.5rem;}
+    
+    .transfer-box {
+      border: 1px dashed var(--accent-warn); background: rgba(255,184,0,0.05); padding: 10px; text-align: center; margin: 15px 0; border-radius: 8px; color: var(--accent-warn); font-size: 0.85rem;
+    }
+
+    /* All Routes Filter */
+    .filter-bar { margin: 0 auto 3rem; text-align: center; max-width: 500px; }
+    .routes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+    
+    .route-item {
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .route-item:hover { transform: translateY(-5px); border-color: var(--accent-primary); box-shadow: 0 10px 20px rgba(0,242,254,0.1); }
+    .route-item-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;}
+    .route-item-bn { font-family: var(--font-bn); color: var(--accent-secondary); margin-bottom: 1rem; font-size: 0.9rem;}
+    
+    .loader {
+      width: 48px; height: 48px; border: 5px solid rgba(0, 242, 254, 0.2); border-bottom-color: var(--accent-primary);
+      border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; margin: 2rem auto; display: none;
+    }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Navbar -->
+  <nav class="nav">
+    <a href="javascript:void(0)" onclick="switchView('search')" class="nav-brand">
+      <i class="hgi-stroke hgi-bus-01"></i> DhakaTransit
+    </a>
+    <div class="nav-links">
+      <button onclick="switchView('search')" id="nav-search" class="active"><i class="hgi-stroke hgi-search-01"></i> Plan Journey</button>
+      <button onclick="switchView('routes')" id="nav-routes"><i class="hgi-stroke hgi-map-02"></i> All Routes</button>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div id="loader" style="text-align:center;"><span class="loader"></span></div>
+
+    <!-- 1) SEARCH VIEW -->
+    <div id="view-search" class="view-section active">
+      <div class="hero">
+        <h1 class="hero-title">Find Your Next Ride<span class="hero-bn">আপনার গন্তব্যের বাস খুঁজুন</span></h1>
+        <p style="color:var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 3rem;">
+          The most advanced transit engine to navigate Dhaka city. Hyper-fast direct and transfer routes mapped out instantly.
+        </p>
+      </div>
+
+      <div class="glass-card cyber-border">
+        <form id="search-form" onsubmit="handleSearch(event)">
+          <div class="search-grid">
+            
+            <div class="input-group">
+              <label><i class="hgi-stroke hgi-location-01"></i> Departure</label>
+              <i class="hgi-stroke hgi-flag-02 input-icon"></i>
+              <input type="text" id="from-stop" class="cyber-input" placeholder="e.g. Mirpur 10" autocomplete="off" required>
+              <div class="suggestions" id="from-suggestions"></div>
+            </div>
+
+            <button type="button" class="swap-btn" onclick="swapStops()" title="Swap"><i class="hgi-stroke hgi-arrow-left-right"></i></button>
+
+            <div class="input-group">
+              <label><i class="hgi-stroke hgi-location-add-01"></i> Destination</label>
+              <i class="hgi-stroke hgi-pin-02 input-icon"></i>
+              <input type="text" id="to-stop" class="cyber-input" placeholder="e.g. Gulshan 2" autocomplete="off" required>
+              <div class="suggestions" id="to-suggestions"></div>
+            </div>
+
+          </div>
+          
+          <button type="submit" class="btn-epic">
+            <i class="hgi-stroke hgi-search-02" style="font-size: 1.3rem;"></i> Search Routes
+          </button>
+        </form>
+      </div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-num">{{ total_routes }}</div>
+          <div class="stat-label">Bus Routes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">{{ total_stops }}</div>
+          <div class="stat-label">Active Stops</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) RESULTS VIEW -->
+    <div id="view-results" class="view-section">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- 3) ALL ROUTES VIEW -->
+    <div id="view-routes" class="view-section">
+      <div class="filter-bar">
+        <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; font-weight:800; color:#fff;">Network Overview</h2>
+        <div class="input-group" style="text-align:center;">
+          <input type="text" id="route-filter" class="cyber-input" placeholder="Filter by Route or Stop name..." style="padding-left: 1.5rem;">
+        </div>
+      </div>
+      
+      <div class="routes-grid" id="routes-container">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Embedded Data Setup
+    const allStops = {{ all_stops | tojson | safe }};
+    const engineUrlPrefix = '/api';
+
+    // State
+    const state = {
+      allRoutes: []
+    };
+
+    // Initialize Routing based on URL path
+    window.addEventListener('popstate', handleRouter);
+    document.addEventListener("DOMContentLoaded", () => {
+      // Setup Auto completes
+      setupAutocomplete('from-stop', 'from-suggestions');
+      setupAutocomplete('to-stop', 'to-suggestions');
+      
+      // Setup Route Filter
+      document.getElementById('route-filter').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('.route-item').forEach(card => {
+          const content = card.dataset.search.toLowerCase();
+          card.style.display = content.includes(q) ? 'block' : 'none';
+        });
+      });
+
+      handleRouter();
+    });
+
+    function handleRouter() {
+      const path = window.location.pathname;
+      if (path === '/routes') {
+        switchView('routes', false);
+      } else {
+        switchView('search', false);
+      }
+    }
+
+    function switchView(viewName, pushState = true) {
+      // Update UI active states
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.getElementById(`view-${viewName}`).classList.add('active');
+      
+      document.querySelector('#nav-search').classList.toggle('active', viewName === 'search' || viewName === 'results');
+      document.querySelector('#nav-routes').classList.toggle('active', viewName === 'routes');
+      
+      if (pushState) {
+        if (viewName === 'routes') window.history.pushState({}, '', '/routes');
+        else window.history.pushState({}, '', '/');
+      }
+
+      if (viewName === 'routes' && state.allRoutes.length === 0) {
+        loadAllRoutes();
+      }
+    }
+
+    function swapStops() {
+      const fromEl = document.getElementById('from-stop');
+      const toEl = document.getElementById('to-stop');
+      const temp = fromEl.value;
+      fromEl.value = toEl.value;
+      toEl.value = temp;
+    }
+
+    // Auto complete functionality
+    function setupAutocomplete(inputId, listId) {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+      
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        if (q.length < 2) { list.classList.remove('open'); return; }
+        
+        const filtered = allStops.filter(s => s.toLowerCase().includes(q)).slice(0, 8);
+        if(filtered.length === 0) { list.classList.remove('open'); return; }
+
+        list.innerHTML = filtered.map(item => `
+          <div class="s-item" onmousedown="event.preventDefault(); selectStop('${inputId}', '${listId}', '${item.replace(/'/g, "\\'")}')">
+            <i class="hgi-stroke hgi-location-01"></i> ${item}
+          </div>
+        `).join('');
+        list.classList.add('open');
+      });
+
+      input.addEventListener('blur', () => list.classList.remove('open'));
+    }
+
+    window.selectStop = function(inputId, listId, val) {
+      document.getElementById(inputId).value = val;
+      document.getElementById(listId).classList.remove('open');
+    }
+
+    // API Calls
+    async function loadAllRoutes() {
+      document.getElementById('loader').style.display = 'block';
+      try {
+        const res = await fetch(`${engineUrlPrefix}/routes`);
+        const data = await res.json();
+        state.allRoutes = data.routes;
+        renderAllRoutes();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        document.getElementById('loader').style.display = 'none';
+      }
+    }
+
+    function renderAllRoutes() {
+      const container = document.getElementById('routes-container');
+      container.innerHTML = state.allRoutes.map(item => {
+        const parts = item.name.split('(');
+        const nameEN = parts[0].trim();
+        const nameBN = parts[1] ? parts[1].replace(')', '') : '';
+        const searchStr = `${item.name} ${item.stops.join(' ')}`;
+        
+        return `
+          <div class="route-item" data-search="${searchStr}">
+             <i class="hgi-stroke hgi-bus-02" style="font-size:2rem; color:var(--accent-primary); margin-bottom:1rem;"></i>
+             <div class="route-item-title">${nameEN}</div>
+             ${nameBN ? `<div class="route-item-bn">${nameBN}</div>` : ''}
+             <div class="badge b-stops" style="display:inline-flex;">
+               <i class="hgi-stroke hgi-signpost"></i> ${item.stops.length} Stops
+             </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleSearch(e) {
+      e.preventDefault();
+      const from = document.getElementById('from-stop').value;
+      const to = document.getElementById('to-stop').value;
+      if(!from || !to) return;
+
+      switchView('results', false);
+      window.scrollTo(0,0);
+      const container = document.getElementById('view-results');
+      container.innerHTML = `<div style="text-align:center; padding: 4rem 0;"><span class="loader" style="display:inline-block"></span><p>Navigating optimum routes...</p></div>`;
+
+      try {
+        const res = await fetch(`${engineUrlPrefix}/search?from_stop=${encodeURIComponent(from)}&to_stop=${encodeURIComponent(to)}`);
+        const data = await res.json();
+        renderResults(data);
+      } catch(err) {
+        container.innerHTML = `<div class="status-msg status-fail"><i class="hgi-stroke hgi-alert-01"></i> Failed to reach server.</div>`;
+      }
+    }
+
+    function renderResults(res) {
+      let html = `
+        <div class="title-flex">
+           <div class="stop-chip"><i class="hgi-stroke hgi-flag-02"></i> ${res.from_stop_matched}</div>
+           <i class="hgi-stroke hgi-arrow-right-01" style="font-size: 1.5rem; color: #fff;"></i>
+           <div class="stop-chip" style="border-color:var(--accent-secondary); color:var(--accent-secondary); background:rgba(254,9,121,0.1);">
+             <i class="hgi-stroke hgi-pin-02"></i> ${res.to_stop_matched}
+           </div>
+        </div>
+      `;
+
+      if (res.has_results) {
+         if(res.direct_routes && res.direct_routes.length > 0) {
+            html += `<div class="status-msg status-success"><i class="hgi-stroke hgi-checkmark-circle-02"></i> ${res.message}</div>`;
+            html += `<h3 style="margin-bottom:1.5rem; font-weight:800; font-size:1.5rem;">Direct Connections</h3>`;
+            html += res.direct_routes.map(r => `
+               <div class="route-card">
+                  <div class="rc-header">
+                     <div class="rc-title"><i class="hgi-stroke hgi-bus-02" style="color:var(--accent-primary);"></i> ${r.bus_name}</div>
+                     <div class="meta-badges">
+                       <span class="badge b-time"><i class="hgi-stroke hgi-time-02"></i> ~${r.estimated_time_minutes} min</span>
+                       <span class="badge b-stops"><i class="hgi-stroke hgi-signpost"></i> ${r.stop_count} stops</span>
+                     </div>
+                  </div>
+                  <div class="timeline">
+                     <div class="tl-node">${r.from_stop}</div>
+                     ${r.intermediate_stops && r.intermediate_stops.length > 0 ? 
+                       `<div class="tl-node tl-mid"><i class="hgi-stroke hgi-routing-01"></i> ${r.intermediate_stops.length} intermediate stops</div>` : ''}
+                     <div class="tl-node end">${r.to_stop}</div>
+                  </div>
+               </div>
+            `).join('');
+         }
+
+         if(res.indirect_routes && res.indirect_routes.length > 0) {
+            if(!res.direct_routes || res.direct_routes.length === 0) {
+                html += `<div class="status-msg status-warn"><i class="hgi-stroke hgi-routing-02"></i> ${res.message}</div>`;
+            }
+            html += `<h3 style="margin-bottom:1.5rem; margin-top:2.5rem; font-weight:800; font-size:1.5rem;">Transfer Connections</h3>`;
+            html += res.indirect_routes.map(r => `
+               <div class="route-card" style="border-left-color:var(--accent-warn);">
+                  <div class="rc-header">
+                     <div class="rc-title" style="color:var(--accent-warn);"><i class="hgi-stroke hgi-routing-02"></i> 1 Transfer via ${r.transfer_point}</div>
+                     <div class="meta-badges">
+                       <span class="badge b-time"><i class="hgi-stroke hgi-time-02"></i> ~${r.total_time_minutes} min</span>
+                       <span class="badge b-stops" style="border-color:var(--glass-border); color:var(--text-main); background:var(--glass);">
+                         <i class="hgi-stroke hgi-signpost"></i> ${r.total_stops} total stops
+                       </span>
+                     </div>
+                  </div>
+                  
+                  <div class="timeline">
+                     <div class="tl-node">${r.first_leg.from_stop}</div>
+                     <div class="tl-node tl-mid"><i class="hgi-stroke hgi-bus-02"></i> ${r.first_leg.bus_name} (${r.first_leg.stop_count} stops)</div>
+                  </div>
+                  <div class="transfer-box"><i class="hgi-stroke hgi-walking"></i> Switch at <strong>${r.transfer_point}</strong></div>
+                  <div class="timeline">
+                     <div class="tl-node tl-mid"><i class="hgi-stroke hgi-bus-02"></i> ${r.second_leg.bus_name} (${r.second_leg.stop_count} stops)</div>
+                     <div class="tl-node end">${r.second_leg.to_stop}</div>
+                  </div>
+               </div>
+            `).join('');
+         }
+      } else {
+         html += `
+         <div class="status-msg status-fail" style="flex-direction:column; padding:3rem 1rem;">
+           <i class="hgi-stroke hgi-alert-02" style="font-size:3rem; margin-bottom:1rem;"></i>
+           ${res.message}
+           <p style="color:var(--text-muted); font-size:0.9rem; font-weight:400; margin-top:0.5rem;">Try using a nearby major location</p>
+         </div>`;
+      }
+      
+      html += `
+        <div style="text-align:center; margin-top: 3rem;">
+           <button class="btn-epic" style="display:inline-flex; width:auto; padding:1rem 2rem; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border);" onclick="switchView('search', false)">
+             <i class="hgi-stroke hgi-search-01"></i> Search Again
+           </button>
+        </div>
+      `;
+
+      document.getElementById('view-results').innerHTML = html;
+    }
+
+  </script>
+</body>
+</html>
