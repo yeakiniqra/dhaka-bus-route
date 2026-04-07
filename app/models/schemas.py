@@ -4,8 +4,6 @@ from pydantic import BaseModel, field_validator
 class BusRoute(BaseModel):
     name: str
     stops: list[str]
-    fare_per_stop: int = 2
-    base_fare: int = 10
 
 
 class BusStop(BaseModel):
@@ -19,14 +17,6 @@ class DirectRoute(BaseModel):
     to_stop: str
     intermediate_stops: list[str]
     stop_count: int
-    estimated_fare: int
-
-    @field_validator("estimated_fare")
-    @classmethod
-    def fare_must_be_positive(cls, v):
-        if v < 0:
-            raise ValueError("Fare cannot be negative")
-        return v
 
 
 class TransferPoint(BaseModel):
@@ -39,7 +29,6 @@ class IndirectRoute(BaseModel):
     transfer_point: str
     first_leg: DirectRoute
     second_leg: DirectRoute
-    total_fare: int
     total_stops: int
 
 

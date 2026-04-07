@@ -11,7 +11,7 @@ from app.services.route_engine import RouteEngine
 
 app = FastAPI(
     title="Dhaka Bus Route Finder",
-    description="Find bus routes and fares across Dhaka city",
+    description="Find bus routes across Dhaka city",
     version="1.0.0",
 )
 

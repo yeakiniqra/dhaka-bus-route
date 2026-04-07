@@ -99,9 +99,6 @@ class RouteEngine:
         norm = normalize_stop(stop_name)
         return self._stop_norm_map.get(norm)
 
-    def _calculate_fare(self, route: BusRoute, stop_count: int) -> int:
-        return route.base_fare + (stop_count * route.fare_per_stop)
-
     def _build_direct_route(
         self,
         route: BusRoute,
@@ -116,7 +113,6 @@ class RouteEngine:
             segment = route.stops[to_idx : from_idx + 1][::-1]
 
         stop_count = abs(to_idx - from_idx)
-        fare = self._calculate_fare(route, stop_count)
 
         return DirectRoute(
             bus_name=route.name,
@@ -124,7 +120,6 @@ class RouteEngine:
             to_stop=to_canonical,
             intermediate_stops=segment[1:-1],
             stop_count=stop_count,
-            estimated_fare=fare,
         )
 
     def find_routes(self, from_query: str, to_query: str) -> RouteSearchResult:
@@ -269,7 +264,6 @@ class RouteEngine:
                             transfer_point=transfer_canonical,
                             first_leg=leg1,
                             second_leg=leg2,
-                            total_fare=leg1.estimated_fare + leg2.estimated_fare,
                             total_stops=leg1.stop_count + leg2.stop_count,
                         )
                     )
