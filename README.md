@@ -27,7 +27,6 @@
 - **Fare Calculation**: Automatic fare estimation based on distance
 - **Stop Suggestions**: Autocomplete suggestions for bus stops
 - **CORS Enabled**: Use the API from any frontend application
-- **Beautiful UI**: Dark-themed web interface for route search
 - **RESTful API**: JSON API for programmatic access
 
 ---
